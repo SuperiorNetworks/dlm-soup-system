@@ -1,0 +1,33 @@
+{
+  "daily_digest_config": {
+    "dlm_soups_enabled": true,
+    "temperature_triggers": {
+      "high_threshold": 70,
+      "high_comparison": "<=",
+      "change_24h_threshold": 10,
+      "change_24h_description": "If high dropped 10\u00b0F in last 24h"
+    },
+    "enabled_locations": [
+      "Oakwood",
+      "Springboro",
+      "Washington Square"
+    ],
+    "include_mason_daily": false,
+    "description": "Show DLM soups if EITHER threshold is met"
+  },
+  "preferences": {
+    "favorite_soups": [
+      "Seafood Chowder",
+      "Fisherman's Stew",
+      "New England Clam Chowder",
+      "Oyster Stew",
+      "Broccoli Chicken Bacon Soup"
+    ],
+    "background_alerts": {
+      "new_soups_all_locations": true,
+      "new_soups_at_mason_special": true,
+      "batch_at_5am_digest": true,
+      "note_on_9_30am_update": "DLM updates soups at 9:30 AM. Check back then."
+    }
+  }
+}
