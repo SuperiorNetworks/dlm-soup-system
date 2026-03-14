@@ -109,12 +109,19 @@ Valid range: 30-90°F
 
 ## HOW TO USE
 
+### Get This File
+Ask Miles: **"email me DLM Settings to adjust favs"**
+- Miles will email you the latest DLM_SETTINGS.md file
+- Download and edit it
+- When done, ask Miles: "I've updated my DLM preferences" and share the file
+
 ### Edit Settings
-1. Open this file in Google Drive
-2. Add/remove locations or soups
-3. Change temperature threshold
-4. Save the file (Ctrl+S)
-5. Changes sync back to system within 5 minutes
+1. Open DLM_SETTINGS.md in any text editor (or Google Drive)
+2. Add/remove locations (toggle ✅/❌)
+3. Add/remove favorite soups (use ⭐ for favorites, ☆ for non-favorites)
+4. Change temperature threshold (number only, 30-90°F)
+5. Save the file
+6. Share updated file with Miles for sync
 
 ### View in Discord
 Still available via commands:
