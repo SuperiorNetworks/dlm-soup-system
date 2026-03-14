@@ -20,10 +20,9 @@
     "favorite_soups": [
       "Fisherman's Stew",
       "New England Clam Chowder",
-      "Oyster Stew",
-      "Broccoli Chicken Bacon Soup",
-      "Tom Yum Gai",
-      "Beef Vegetable"
+      "Potato & Bacon",
+      "Seafood Chowder",
+      "Stuffed Pepper"
     ],
     "background_alerts": {
       "new_soups_all_locations": true,
