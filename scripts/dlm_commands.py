@@ -192,7 +192,95 @@ class DLMCommandHandler:
             }]
         }
     
-    def handle_command(self, command):
+    def handle_config_show(self):
+        """Show config menu for editing preferences"""
+        config = self.scraper.config
+        
+        locations = config['daily_digest_config']['enabled_locations']
+        soups = config['preferences']['favorite_soups']
+        temp_threshold = config['daily_digest_config']['temperature_triggers']['high_threshold']
+        
+        content = "⚙️ **DLM PREFERENCES CONFIG**\n\n"
+        content += f"**Enabled Locations:** {', '.join(locations)}\n\n"
+        content += f"**Favorite Soups:** {', '.join(soups[:3])}...\n\n"
+        content += f"**Temp Threshold:** {temp_threshold}°F or colder\n\n"
+        content += "**Edit with:**\n"
+        content += "• `!dlm-config --add-location [name]`\n"
+        content += "• `!dlm-config --remove-location [name]`\n"
+        content += "• `!dlm-config --add-soup [name]`\n"
+        content += "• `!dlm-config --remove-soup [name]`\n"
+        content += "• `!dlm-config --set-temp-threshold [temp]`\n"
+        
+        return {"content": content}
+    
+    def handle_config_edit(self, args):
+        """Edit config preferences"""
+        if not args or len(args) < 2:
+            return self.handle_config_show()
+        
+        action = args[0]
+        value = ' '.join(args[1:])
+        
+        config = self.scraper.config
+        
+        if action == '--add-location':
+            if value not in config['daily_digest_config']['enabled_locations']:
+                config['daily_digest_config']['enabled_locations'].append(value)
+                self.scraper._save_state()
+                return {
+                    "content": f"✅ Added **{value}** to enabled locations.\n\n**New locations:** {', '.join(config['daily_digest_config']['enabled_locations'])}"
+                }
+            else:
+                return {"content": f"⚠️ **{value}** already in enabled locations."}
+        
+        elif action == '--remove-location':
+            if value in config['daily_digest_config']['enabled_locations']:
+                config['daily_digest_config']['enabled_locations'].remove(value)
+                with open('/root/.openclaw/SNDayton/config/dlm_config.json', 'w') as f:
+                    json.dump(config, f, indent=2)
+                return {
+                    "content": f"✅ Removed **{value}** from enabled locations.\n\n**Remaining locations:** {', '.join(config['daily_digest_config']['enabled_locations'])}"
+                }
+            else:
+                return {"content": f"⚠️ **{value}** not found in enabled locations."}
+        
+        elif action == '--add-soup':
+            if value not in config['preferences']['favorite_soups']:
+                config['preferences']['favorite_soups'].append(value)
+                with open('/root/.openclaw/SNDayton/config/dlm_config.json', 'w') as f:
+                    json.dump(config, f, indent=2)
+                return {
+                    "content": f"✅ Added **{value}** to favorites.\n\nTotal favorites: {len(config['preferences']['favorite_soups'])}"
+                }
+            else:
+                return {"content": f"⚠️ **{value}** already in favorites."}
+        
+        elif action == '--remove-soup':
+            if value in config['preferences']['favorite_soups']:
+                config['preferences']['favorite_soups'].remove(value)
+                with open('/root/.openclaw/SNDayton/config/dlm_config.json', 'w') as f:
+                    json.dump(config, f, indent=2)
+                return {
+                    "content": f"✅ Removed **{value}** from favorites.\n\nRemaining: {len(config['preferences']['favorite_soups'])} soups"
+                }
+            else:
+                return {"content": f"⚠️ **{value}** not found in favorites."}
+        
+        elif action == '--set-temp-threshold':
+            try:
+                temp = int(value)
+                config['daily_digest_config']['temperature_triggers']['high_threshold'] = temp
+                with open('/root/.openclaw/SNDayton/config/dlm_config.json', 'w') as f:
+                    json.dump(config, f, indent=2)
+                return {
+                    "content": f"✅ Temperature threshold set to **{temp}°F or colder**.\n\nDLM soups will show in digest when high ≤ {temp}°F."
+                }
+            except ValueError:
+                return {"content": f"❌ Invalid temperature. Use a number (e.g., 65)"}
+        
+        return {"content": "❌ Unknown config action."}
+    
+    def handle_command(self, command, args=None):
         """Route command to handler"""
         if command == 'check' or command == 'all':
             return self.handle_check()
@@ -202,17 +290,57 @@ class DLMCommandHandler:
             return self.handle_favorites()
         elif command == 'new':
             return self.handle_new()
+        elif command == 'config':
+            if args:
+                return self.handle_config_edit(args)
+            else:
+                return self.handle_config_show()
         else:
             return {
-                "content": "❌ Unknown command.\n\n**Available commands:**\n• `!dlm-check` - All soups (all locations)\n• `!dlm-mason` - Mason only (⭐ = favorites)\n• `!dlm-favorites` - Your favorites across all locations\n• `!dlm-new` - New soups never seen before"
+                "content": "❌ Unknown command.\n\n**Available commands:**\n• `!dlm-check` - All soups (all locations)\n• `!dlm-mason` - Mason only (⭐ = favorites)\n• `!dlm-favorites` - Your favorites across all locations (natural language: \"what is the DLM soup of the day?\")\n• `!dlm-new` - New soups never seen before\n• `!dlm-config` - Edit preferences (locations, soups, temp threshold)"
             }
+
+def detect_natural_language(text):
+    """Detect natural language triggers and map to commands"""
+    text_lower = text.lower()
+    
+    # Check for natural language phrases
+    if 'what is the dlm soup of the day' in text_lower or 'what are your favorite soups' in text_lower:
+        return 'favorites'
+    elif 'mason soup' in text_lower or 'mason location' in text_lower:
+        return 'mason'
+    elif 'new soup' in text_lower:
+        return 'new'
+    elif 'dlm soup' in text_lower or 'dorothy lane' in text_lower:
+        return 'check'
+    
+    return None
 
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"content": "No command provided"}))
         sys.exit(1)
     
-    command = sys.argv[1].lower().replace('!dlm-', '').replace('--', '')
+    full_input = ' '.join(sys.argv[1:]).lower()
+    
+    # Try natural language detection first
+    nl_command = detect_natural_language(full_input)
+    if nl_command:
+        handler = DLMCommandHandler()
+        result = handler.handle_command(nl_command)
+        print(json.dumps(result))
+        return
+    
+    # Parse text/slash commands
+    command = sys.argv[1].lower().replace('!dlm-', '').replace('--', '').replace('/dlm ', '')
+    
+    # Handle config editing (may have additional args)
+    if command == 'config' and len(sys.argv) > 2:
+        config_args = sys.argv[2:]
+        handler = DLMCommandHandler()
+        result = handler.handle_command('config', config_args)
+        print(json.dumps(result))
+        return
     
     handler = DLMCommandHandler()
     result = handler.handle_command(command)

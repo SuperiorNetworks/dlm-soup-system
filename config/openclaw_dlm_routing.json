@@ -1,0 +1,100 @@
+{
+  "name": "DLM Soup Routing",
+  "description": "OpenClaw message handler routing for DLM commands",
+  "version": "1.0.0",
+  "author": "Dwain Henderson Jr",
+  "triggers": {
+    "text_commands": {
+      "description": "Text-based commands (!dlm-*)",
+      "pattern": "^!dlm-(check|all|mason|favorites|new|config)",
+      "handler": "python3 /root/.openclaw/SNDayton/scripts/dlm_commands.py {command}",
+      "examples": [
+        "!dlm-check",
+        "!dlm-mason",
+        "!dlm-favorites",
+        "!dlm-new",
+        "!dlm-config"
+      ]
+    },
+    "slash_commands": {
+      "description": "Slash commands (/dlm check)",
+      "pattern": "^\\/dlm\\s+(check|all|mason|favorites|new|config)",
+      "handler": "python3 /root/.openclaw/SNDayton/scripts/dlm_commands.py {command}",
+      "examples": [
+        "/dlm check",
+        "/dlm mason",
+        "/dlm favorites",
+        "/dlm new",
+        "/dlm config"
+      ]
+    },
+    "natural_language": {
+      "description": "Natural language triggers",
+      "triggers": [
+        {
+          "phrase": "what is the dlm soup of the day",
+          "action": "favorites",
+          "description": "Shows your favorite soups at enabled locations"
+        },
+        {
+          "phrase": "dlm soup",
+          "action": "check",
+          "description": "Shows all soups"
+        },
+        {
+          "phrase": "mason soup",
+          "action": "mason",
+          "description": "Shows Mason soups"
+        },
+        {
+          "phrase": "new soup",
+          "action": "new",
+          "description": "Shows new soups never seen before"
+        }
+      ],
+      "handler": "python3 /root/.openclaw/SNDayton/scripts/dlm_commands.py {action}",
+      "case_insensitive": true,
+      "partial_match": true
+    }
+  },
+  "response_format": {
+    "type": "discord_embed",
+    "include_logo": false,
+    "color_scheme": "orange"
+  },
+  "config_commands": {
+    "description": "Edit preferences via Discord",
+    "commands": [
+      {
+        "name": "!dlm-config",
+        "action": "show",
+        "description": "Show current config menu"
+      },
+      {
+        "name": "!dlm-config --add-location [location]",
+        "action": "edit",
+        "description": "Add location to enabled locations"
+      },
+      {
+        "name": "!dlm-config --remove-location [location]",
+        "action": "edit",
+        "description": "Remove location from enabled locations"
+      },
+      {
+        "name": "!dlm-config --add-soup [soup name]",
+        "action": "edit",
+        "description": "Add soup to favorites"
+      },
+      {
+        "name": "!dlm-config --remove-soup [soup name]",
+        "action": "edit",
+        "description": "Remove soup from favorites"
+      },
+      {
+        "name": "!dlm-config --set-temp-threshold [temp]",
+        "action": "edit",
+        "description": "Set temperature threshold (70 is default)"
+      }
+    ]
+  }
+}
