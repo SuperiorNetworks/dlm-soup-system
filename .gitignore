@@ -1,0 +1,12 @@
+# Sensitive files - never commit
+config/discord_webhook.txt
+google_tokens.json
+google_oauth_credentials.json
+.env
+.env.local
+*.pem
+*.key
+*.ppk
+backup.log
+digests/
+state/
