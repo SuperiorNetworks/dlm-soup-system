@@ -47,13 +47,24 @@ class DLMSettings:
         self.scraper = DLMSoupScraper()
         self.config = self.scraper.config
         self.all_locations = ['Oakwood', 'Mason', 'Springboro', 'Washington Square', 'Culinary Center', 'Love Cakes']
+        self.all_soups = {}
+        # Scrape on init to get all soups
+        self.scraper.scrape_soups()
+        self.all_soups = dict(self.scraper.current_soups)
     
     def build_settings_dashboard(self):
-        """Build comprehensive settings page"""
+        """Build comprehensive settings page with all soups"""
         enabled_locs = self.config['daily_digest_config']['enabled_locations']
         disabled_locs = [loc for loc in self.all_locations if loc not in enabled_locs]
         favorites = self.config['preferences']['favorite_soups']
         temp_threshold = self.config['daily_digest_config']['temperature_triggers']['high_threshold']
+        
+        # Scrape all soups
+        if not hasattr(self, 'all_soups') or not self.all_soups:
+            self.scraper.scrape_soups()
+            self.all_soups = {}
+            for loc, soups in self.scraper.current_soups.items():
+                self.all_soups[loc] = soups
         
         # Build location toggles
         location_section = "**ENABLED LOCATIONS** ✅\n"
@@ -64,10 +75,21 @@ class DLMSettings:
         for loc in disabled_locs:
             location_section += f"• {loc}\n"
         
-        # Build favorite soups
-        soup_section = "**FAVORITE SOUPS** ⭐\n"
-        for i, soup in enumerate(favorites, 1):
-            soup_section += f"{i}. {soup}\n"
+        # Build ALL soups with favorite indicators
+        soup_section = "**ALL SOUPS** (⭐ = Your Favorite)\n\n"
+        
+        for location in self.all_locations:
+            if location not in self.all_soups:
+                continue
+            
+            soups = self.all_soups[location]
+            soup_section += f"**{location}:**\n"
+            
+            for soup in soups:
+                icon = "⭐" if soup in favorites else "☆"
+                soup_section += f"  {icon} {soup}\n"
+            
+            soup_section += "\n"
         
         # Build temperature section
         temp_section = f"**TEMPERATURE THRESHOLD**\n"
@@ -76,21 +98,21 @@ class DLMSettings:
         
         # Build instructions
         instructions = "\n**HOW TO TOGGLE:**\n"
-        instructions += "• \"toggle mason\" → Enable/disable Mason\n"
-        instructions += "• \"toggle seafood chowder\" → Add/remove favorite\n"
+        instructions += "• \"toggle mason\" → Enable/disable location\n"
+        instructions += "• \"toggle [soup name]\" → Star/unstar favorite\n"
         instructions += "• \"set temp to 65\" → Change threshold\n"
         instructions += "• \"add springboro\" → Enable location\n"
         instructions += "• \"remove classic chili\" → Remove favorite\n"
         
-        content = location_section + "\n" + soup_section + "\n" + temp_section + instructions
+        content = location_section + "\n" + soup_section + temp_section + instructions
         
         return {
-            "content": "⚙️ **DLM SUPER DAY SETTINGS**",
+            "content": "🍲 **DLM SOUP OF THE DAY SETTINGS**",
             "embeds": [{
                 "title": "Your Preferences Dashboard",
                 "description": content,
                 "color": 0xF39C12,
-                "footer": {"text": "Natural language enabled - say what you want to change"}
+                "footer": {"text": "Natural language enabled - toggle any soup to favorite (⭐)"}
             }]
         }
     
@@ -135,14 +157,23 @@ class DLMSettings:
                 match = fav
                 break
         
+        # If no match in favorites, try to find canonical name from all_soups
+        canonical_name = soup_name
+        if not match and self.all_soups:
+            for location, soups in self.all_soups.items():
+                for soup in soups:
+                    if soup.lower() == soup_name.lower():
+                        canonical_name = soup
+                        break
+        
         if match:
             # Remove
             favorites.remove(match)
             action = "removed"
             icon = "❌"
         else:
-            # Add (use provided name)
-            favorites.append(soup_name)
+            # Add (use canonical name)
+            favorites.append(canonical_name)
             action = "added"
             icon = "⭐"
         
@@ -152,7 +183,7 @@ class DLMSettings:
         
         count = len(favorites)
         return {
-            "content": f"{icon} **{soup_name}** {action} to favorites.\n\nTotal favorites: {count}"
+            "content": f"{icon} **{canonical_name}** {action} to favorites.\n\nTotal favorites: {count}"
         }
     
     def adjust_temperature(self, temp_str):

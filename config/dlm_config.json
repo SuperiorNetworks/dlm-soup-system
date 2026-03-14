@@ -2,7 +2,7 @@
   "daily_digest_config": {
     "dlm_soups_enabled": true,
     "temperature_triggers": {
-      "high_threshold": 70,
+      "high_threshold": 65,
       "high_comparison": "<=",
       "change_24h_threshold": 10,
       "change_24h_description": "If high dropped 10\u00b0F in last 24h"
@@ -10,18 +10,20 @@
     "enabled_locations": [
       "Oakwood",
       "Springboro",
-      "Washington Square"
+      "Washington Square",
+      "Mason"
     ],
     "include_mason_daily": false,
     "description": "Show DLM soups if EITHER threshold is met"
   },
   "preferences": {
     "favorite_soups": [
-      "Seafood Chowder",
       "Fisherman's Stew",
       "New England Clam Chowder",
       "Oyster Stew",
-      "Broccoli Chicken Bacon Soup"
+      "Broccoli Chicken Bacon Soup",
+      "Tom Yum Gai",
+      "Beef Vegetable"
     ],
     "background_alerts": {
       "new_soups_all_locations": true,
