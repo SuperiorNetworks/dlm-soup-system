@@ -10,3 +10,20 @@ google_oauth_credentials.json
 backup.log
 digests/
 state/
+
+# Personal/internal files - not for public repo
+memory/
+MEMORY.md
+AGENTS.md
+SOUL.md
+USER.md
+IDENTITY.md
+BOOTSTRAP.md
+HEARTBEAT.md
+PREFERENCES.md
+PROMPTING_OPENCLAW_GUIDE.md
+EMAIL_COPILOT_PROMPT.md
+TASKS.md
+.clawhub/
+.openclaw/
+.google_credentials
