@@ -288,11 +288,6 @@ def generate_digest():
     tasks = get_active_tasks()
     cron_status = get_cron_status()
     
-    # Get DLM soups (temperature-triggered)
-    # Calculate temp change from weather
-    change_24h = weather.get('change_24h', 0) if 'change_24h' in weather else 0
-    dlm_data = get_dlm_soups(int(weather['temp'].replace('°F', '')) if '°F' in weather['temp'] else 70, change_24h)
-    
     # Current time in EDT
     now = datetime.utcnow()
     edt_hour = now.hour - 4
@@ -352,30 +347,11 @@ def generate_digest():
     
     cfo_section += " Bottom line: Stay focused on execution. Procurement efficiency = margin wins.\n"
     
-    # Build DLM soups section (if temperature triggers)
+    # DLM soups removed from daily digest
+    # Menu doesn't come out until 9:30 AM
+    # Separate cron job runs at 10 AM with temp check
     dlm_section = ""
-    if dlm_data and dlm_data.get('daily_digest_soups', {}).get('should_include'):
-        dlm_section = "🍲 DOROTHY LANE MARKET SOUPS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        dlm_section += f" 📌 {dlm_data['daily_digest_soups']['note_if_triggered']}\n\n"
-        
-        favorites = dlm_data['daily_digest_soups'].get('your_favorites', [])
-        if favorites:
-            dlm_section += " YOUR FAVORITES AVAILABLE:\n"
-            for match in favorites:
-                dlm_section += f"  🍲 {match['soup']} → {match['location']}\n"
-        else:
-            dlm_section += " No favorite soups available at your locations today.\n"
-        
-        dlm_section += "\n"
-    
-    # Handle new soups alert (always, regardless of location filters)
     new_soups_section = ""
-    if dlm_data and dlm_data.get('new_soups_alert', {}).get('new_soups_found'):
-        new_soups = dlm_data['new_soups_alert']['new_soups_found']
-        new_soups_section = "🚨 NEW SOUPS DETECTED\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        for soup in new_soups:
-            new_soups_section += f" 🆕 {soup['soup']} → {soup['location']}\n"
-        new_soups_section += "\n"
     
     # Build motivation section
     motivation = "\n🚀 TODAY'S FOCUS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
