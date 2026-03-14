@@ -304,14 +304,17 @@ def detect_natural_language(text):
     """Detect natural language triggers and map to commands"""
     text_lower = text.lower()
     
+    # Normalize common typos (super -> soup, etc)
+    text_normalized = text_lower.replace('super', 'soup').replace('dly', 'dlm')
+    
     # Check for natural language phrases
-    if 'what is the dlm soup of the day' in text_lower or 'what are your favorite soups' in text_lower:
+    if 'what is the dlm soup of the day' in text_normalized or 'what are your favorite soups' in text_normalized or 'favorite soups' in text_normalized:
         return 'favorites'
-    elif 'mason soup' in text_lower or 'mason location' in text_lower:
+    elif 'mason soup' in text_normalized or 'mason location' in text_normalized or 'go to mason' in text_normalized:
         return 'mason'
-    elif 'new soup' in text_lower:
+    elif 'new soup' in text_normalized or 'any new soup' in text_normalized:
         return 'new'
-    elif 'dlm soup' in text_lower or 'dorothy lane' in text_lower:
+    elif 'dlm soup' in text_normalized or 'dorothy lane' in text_normalized or 'soup today' in text_normalized:
         return 'check'
     
     return None
